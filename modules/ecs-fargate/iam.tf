@@ -162,3 +162,39 @@ resource "aws_iam_role_policy_attachment" "codepipeline_s3_policy_attach" {
   role       = aws_iam_role.codepipeline.name
   policy_arn = aws_iam_policy.codepipeline_s3_policy.arn
 }
+
+# CodePipeline ECS Deployment Policy
+resource "aws_iam_policy" "codepipeline_ecs_policy" {
+  name = "${var.project_name}-codepipeline-ecs-policy"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ecs:UpdateService",
+          "ecs:DescribeServices",
+          "ecs:DescribeTaskDefinition",
+          "ecs:DescribeTasks",
+          "ecs:ListTasks",
+          "ecs:RegisterTaskDefinition"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:PassRole"
+        ],
+        Resource = [
+          aws_iam_role.ecs_task_execution.arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_ecs_policy_attach" {
+  role       = aws_iam_role.codepipeline.name
+  policy_arn = aws_iam_policy.codepipeline_ecs_policy.arn
+}

@@ -1,12 +1,16 @@
 # Terraform AWS ECS Fargate Infrastructure
 
-A comprehensive Terraform configuration for deploying containerized applications on AWS ECS Fargate with complete CI/CD pipeline, networking infrastructure, and database setup.
+A comprehensive Terraform configuration for deploying containerized applications
+on AWS ECS Fargate with complete CI/CD pipeline, networking infrastructure, and
+database setup.
 
 ## 🏗️ Architecture
 
-This infrastructure creates a complete, production-ready environment that includes:
+This infrastructure creates a complete, production-ready environment that
+includes:
 
 ### 🌐 **VPC Module** (`modules/vpc/`)
+
 - **Custom VPC** with configurable CIDR block
 - **Public Subnets** across multiple AZs for load balancers
 - **Private Subnets** across multiple AZs for ECS tasks and RDS
@@ -16,6 +20,7 @@ This infrastructure creates a complete, production-ready environment that includ
 - **Security Groups** for public (ALB) and private (RDS) resources
 
 ### 🚀 **ECS Fargate Module** (`modules/ecs-fargate/`)
+
 - **ECS Cluster** for running containerized applications
 - **ECS Service** with Fargate launch type
 - **Application Load Balancer (ALB)** for traffic distribution
@@ -24,11 +29,13 @@ This infrastructure creates a complete, production-ready environment that includ
 - **CloudWatch Log Groups** for application logging
 
 ### 🗄️ **Database Infrastructure**
+
 - **RDS PostgreSQL** instance in private subnets
 - **DB Subnet Groups** spanning multiple AZs
 - **Secrets Manager** integration for secure credential storage
 
 ### 🔄 **CI/CD Pipeline**
+
 - **CodePipeline** with CodeStar Connections (GitHub v2 integration)
 - **CodeBuild** for containerizing applications
 - **ECR Repository** for storing Docker images
@@ -37,6 +44,7 @@ This infrastructure creates a complete, production-ready environment that includ
 ## 📁 **Project Structure**
 
 ### Main Configuration
+
 ```
 ├── main.tf                 # Module orchestration and resource calls
 ├── variables.tf            # Input variables for the entire configuration
@@ -47,6 +55,7 @@ This infrastructure creates a complete, production-ready environment that includ
 ```
 
 ### VPC Module (`modules/vpc/`)
+
 ```
 ├── main.tf                # VPC, subnets, gateways, routing, security groups
 ├── variables.tf           # VPC-specific input variables
@@ -54,6 +63,7 @@ This infrastructure creates a complete, production-ready environment that includ
 ```
 
 ### ECS Fargate Module (`modules/ecs-fargate/`)
+
 ```
 ├── main.tf                # Empty - resources split into dedicated files
 ├── variables.tf           # ECS module input variables
@@ -73,6 +83,7 @@ This infrastructure creates a complete, production-ready environment that includ
 ## ⚙️ **Configuration**
 
 ### 1. **Prerequisites**
+
 ```bash
 # Install Terraform
 brew install terraform  # macOS
@@ -87,6 +98,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 ```
 
 ### 2. **Configure Variables**
+
 Update `terraform.tfvars` with your specific values:
 
 ```hcl
@@ -115,6 +127,7 @@ github_branch   = "main"
 ```
 
 ### 3. **Deploy Infrastructure**
+
 ```bash
 # Initialize Terraform and download providers/modules
 terraform init
@@ -128,10 +141,13 @@ terraform apply
 
 ## 🔗 **CodeStar Connections Setup**
 
-This configuration uses **AWS CodeStar Connections** (GitHub v2) for secure repository access:
+This configuration uses **AWS CodeStar Connections** (GitHub v2) for secure
+repository access:
 
 ### **1. Create GitHub Connection**
+
 After `terraform apply`, complete the GitHub connection:
+
 ```bash
 # Get the connection ARN from outputs
 terraform output
@@ -142,16 +158,21 @@ terraform output
 ```
 
 ### **2. Connection Features**
+
 - ✅ **Secure OAuth-based authentication** (no personal access tokens)
 - ✅ **Fine-grained repository permissions**
 - ✅ **Webhook-based triggers** for automatic deployments
 - ✅ **Support for GitHub organizations and private repositories**
 
-## 🚀 **Application Requirements**
+## 🚀 **Application Setup Guide**
 
-Your application repository should include:
+### **Step 1: Prepare Your NestJS Project Repository**
 
-### **Dockerfile**
+1. **Create or use your existing NestJS project repository on GitHub**
+2. **Add the following files to your NestJS project root:**
+
+### **Dockerfile** (Add to your NestJS project root)
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -162,14 +183,27 @@ EXPOSE 3000
 CMD ["npm", "start"]
 ```
 
-### **buildspec.yml** (for CodeBuild)
+### **buildspec.yml** (Add to your NestJS project root)
+
+> ⚠️ **Important**: This file should be placed in the root directory of your
+> NestJS application repository, NOT in this Terraform repository.
+
+The CodeBuild project is pre-configured with all necessary environment
+variables:
+
+- `$REPOSITORY_URI` - Your ECR repository URL (automatically set)
+- `$IMAGE_TAG` - Docker image tag (set to "latest")
+- `$AWS_DEFAULT_REGION` - AWS region for your deployment
+
 ```yaml
 version: 0.2
+
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login
+        --username AWS --password-stdin $REPOSITORY_URI
   build:
     commands:
       - echo Build started on `date`
@@ -181,7 +215,44 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"app","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG >
+        imagedefinitions.json
+      - cat imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
 ```
+
+**Environment Variables**: All variables (`$REPOSITORY_URI`, `$IMAGE_TAG`,
+`$AWS_DEFAULT_REGION`) are automatically provided by the CodeBuild project
+configuration.
+
+### **Step 2: Deploy Infrastructure and Connect GitHub**
+
+1. **Deploy the infrastructure:**
+
+   ```bash
+   terraform init
+   terraform plan
+   terraform apply
+   ```
+
+2. **Complete GitHub connection:**
+
+   - Go to AWS Console → CodeStar Connections
+   - Find your connection and click "Update pending connection"
+   - Authorize with GitHub and select your NestJS repository
+
+3. **Test the pipeline:**
+   - Push code to your NestJS repository
+   - Watch the pipeline execute: Source → Build → Deploy
+   - Check ECS service for successful deployment
+
+### **Step 3: Access Your Application**
+
+Your application will be available at the ALB DNS name provided in the Terraform
+outputs.
 
 ## 📊 **Outputs**
 
@@ -218,11 +289,13 @@ rds_port     = 5432
 ## 🧹 **Cleanup**
 
 To destroy the infrastructure:
+
 ```bash
 terraform destroy
 ```
 
-⚠️ **Warning**: This will permanently delete all resources including databases and stored data.
+⚠️ **Warning**: This will permanently delete all resources including databases
+and stored data.
 
 ## 🤝 **Contributing**
 
@@ -234,7 +307,9 @@ terraform destroy
 
 ## 📝 **License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
 
 ---
-*Built with ❤️ using Terraform, AWS ECS Fargate, and modern DevOps practices.*
+
+_Built with ❤️ using Terraform, AWS ECS Fargate, and modern DevOps practices._

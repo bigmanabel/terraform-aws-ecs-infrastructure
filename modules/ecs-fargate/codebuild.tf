@@ -4,7 +4,7 @@ resource "aws_codebuild_project" "app" {
   service_role = aws_iam_role.codebuild.arn
 
   artifacts {
-    type = "NO_ARTIFACTS"
+    type = "CODEPIPELINE"
   }
 
   environment {
@@ -22,16 +22,17 @@ resource "aws_codebuild_project" "app" {
       name  = "IMAGE_TAG"
       value = "latest"
     }
+
+    environment_variable {
+      name  = "AWS_DEFAULT_REGION"
+      value = var.aws_region
+    }
   }
 
   source {
-    type            = "GITHUB"
-    location        = var.github_repo_url
-    buildspec       = "buildspec.yml"
-    git_clone_depth = 1
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec.yml"
   }
-
-  source_version = "main"
 
   tags = {
     Project = var.project_name
