@@ -11,7 +11,6 @@ integration via CodePipeline.
 - A VPC with public and private subnets
 - An S3 bucket for CodePipeline artifacts
 - A GitHub repository with your application code
-- A GitHub OAuth token
 
 ## Setup Instructions
 
@@ -40,7 +39,6 @@ artifact_bucket    = "your-artifact-bucket-name"
 github_owner       = "your-username"
 github_repo        = "your-repo"
 github_branch      = "main"
-github_oauth_token = "your-github-oauth-token"
 ```
 
 2. **Initialize Terraform**:
@@ -67,13 +65,19 @@ terraform plan
 terraform apply
 ```
 
+6. **Configure GitHub Connection**: After deployment, you'll need to complete the GitHub connection:
+   - Go to the AWS Console → Developer Tools → CodePipeline → Settings → Connections
+   - Find the connection created by Terraform (named `{project_name}-github-connection`)
+   - Click "Update pending connection" and authorize access to your GitHub repository
+
 ## What This Creates
 
 - **ECS Cluster**: Fargate-based cluster for running containerized applications
 - **Application Load Balancer**: For distributing traffic to ECS tasks
 - **RDS PostgreSQL**: Database instance with automatic backups
 - **ECR Repository**: For storing Docker images
-- **CodePipeline & CodeBuild**: CI/CD pipeline connected to GitHub
+- **CodePipeline & CodeBuild**: CI/CD pipeline connected to GitHub via CodeStar Connection
+- **CodeStar Connection**: Secure connection to GitHub (requires manual authorization)
 - **IAM Roles & Policies**: Proper permissions for all services
 - **Security Groups**: Network security rules
 - **Secrets Manager**: Secure storage for database credentials

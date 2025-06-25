@@ -73,9 +73,3 @@ variable "github_branch" {
   type        = string
   default     = "main"
 }
-
-variable "github_oauth_token" {
-  description = "GitHub OAuth token for accessing the repository"
-  type        = string
-  sensitive   = true
-}

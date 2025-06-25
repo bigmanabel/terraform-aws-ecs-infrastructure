@@ -336,6 +336,12 @@ resource "aws_iam_role_policy_attachment" "codebuild_ecr_policy_attach" {
   policy_arn = aws_iam_policy.codebuild_ecr_policy.arn
 }
 
+# CodeStar Connection for GitHub (replaces deprecated GitHub v1 action)
+resource "aws_codestarconnections_connection" "github" {
+  name          = "${var.project_name}-github-connection"
+  provider_type = "GitHub"
+}
+
 resource "aws_codepipeline" "app" {
   name     = "${var.project_name}-pipeline"
   role_arn = aws_iam_role.codepipeline.arn
@@ -351,16 +357,15 @@ resource "aws_codepipeline" "app" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["source_output"]
 
       configuration = {
-        Owner      = var.github_owner
-        Repo       = var.github_repo
-        Branch     = var.github_branch
-        OAuthToken = var.github_oauth_token
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
+        BranchName       = var.github_branch
       }
     }
   }
@@ -430,6 +435,13 @@ resource "aws_iam_policy" "codepipeline_s3_policy" {
           "codebuild:StartBuild"
         ],
         Resource = aws_codebuild_project.app.arn
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "codestar-connections:UseConnection"
+        ],
+        Resource = aws_codestarconnections_connection.github.arn
       }
     ]
   })

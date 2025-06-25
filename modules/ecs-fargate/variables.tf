@@ -68,9 +68,3 @@ variable "github_branch" {
   type        = string
   description = "GitHub branch to use for the CodePipeline"
 }
-
-variable "github_oauth_token" {
-  type        = string
-  description = "GitHub OAuth token for accessing the repository"
-  sensitive   = true
-}
