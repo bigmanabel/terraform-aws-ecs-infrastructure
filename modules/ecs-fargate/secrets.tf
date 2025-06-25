@@ -1,6 +1,6 @@
 # Secrets Manager Secret for Database Credentials
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name = "${var.project_name}-db-credentials"
+  name = "${var.project_name}-db-credentials-${random_id.bucket_suffix.hex}"
 }
 
 # Secrets Manager Secret Version

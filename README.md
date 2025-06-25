@@ -1,131 +1,240 @@
-# Terraform AWS ECS Infrastructure
+# Terraform AWS ECS Fargate Infrastructure
 
-Infrastructure as code for deploying a containerized NestJS app on AWS using ECS
-Fargate, ALB, RDS, and CloudWatch. Includes modules for VPC, IAM, and CI/CD
-integration via CodePipeline.
+A comprehensive Terraform configuration for deploying containerized applications on AWS ECS Fargate with complete CI/CD pipeline, networking infrastructure, and database setup.
 
-## Prerequisites
+## 🏗️ Architecture
 
-- AWS CLI configured with appropriate credentials
-- Terraform >= 1.0
-- A VPC with public and private subnets
-- An S3 bucket for CodePipeline artifacts
-- A GitHub repository with your application code
+This infrastructure creates a complete, production-ready environment that includes:
 
-## Setup Instructions
+### 🌐 **VPC Module** (`modules/vpc/`)
+- **Custom VPC** with configurable CIDR block
+- **Public Subnets** across multiple AZs for load balancers
+- **Private Subnets** across multiple AZs for ECS tasks and RDS
+- **Internet Gateway** for public subnet connectivity
+- **NAT Gateways** (one per AZ) for private subnet outbound connectivity
+- **Route Tables** with appropriate routing for public/private subnets
+- **Security Groups** for public (ALB) and private (RDS) resources
 
-1. **Configure Variables**: Update the `terraform.tfvars` file with your
-   specific values:
+### 🚀 **ECS Fargate Module** (`modules/ecs-fargate/`)
+- **ECS Cluster** for running containerized applications
+- **ECS Service** with Fargate launch type
+- **Application Load Balancer (ALB)** for traffic distribution
+- **Target Groups** with health checks
+- **Security Groups** for ALB, ECS, and RDS access
+- **CloudWatch Log Groups** for application logging
+
+### 🗄️ **Database Infrastructure**
+- **RDS PostgreSQL** instance in private subnets
+- **DB Subnet Groups** spanning multiple AZs
+- **Secrets Manager** integration for secure credential storage
+
+### 🔄 **CI/CD Pipeline**
+- **CodePipeline** with CodeStar Connections (GitHub v2 integration)
+- **CodeBuild** for containerizing applications
+- **ECR Repository** for storing Docker images
+- **IAM Roles and Policies** with least-privilege access
+
+## 📁 **Project Structure**
+
+### Main Configuration
+```
+├── main.tf                 # Module orchestration and resource calls
+├── variables.tf            # Input variables for the entire configuration
+├── outputs.tf             # Output values from both modules
+├── terraform.tfvars       # Variable values and configuration
+├── provider.tf            # AWS provider configuration
+└── README.md              # This documentation
+```
+
+### VPC Module (`modules/vpc/`)
+```
+├── main.tf                # VPC, subnets, gateways, routing, security groups
+├── variables.tf           # VPC-specific input variables
+└── outputs.tf             # VPC resource outputs (IDs, CIDR blocks)
+```
+
+### ECS Fargate Module (`modules/ecs-fargate/`)
+```
+├── main.tf                # Empty - resources split into dedicated files
+├── variables.tf           # ECS module input variables
+├── outputs.tf             # ECS module outputs
+├── alb.tf                 # Application Load Balancer resources
+├── cloudwatch.tf          # CloudWatch log groups
+├── codebuild.tf           # CodeBuild project configuration
+├── codepipeline.tf        # CodePipeline and CodeStar Connections
+├── ecr.tf                 # ECR repository for Docker images
+├── ecs.tf                 # ECS cluster, task definition, service
+├── iam.tf                 # IAM roles, policies, attachments
+├── rds.tf                 # RDS instance and subnet groups
+├── secrets.tf             # AWS Secrets Manager resources
+└── security-groups.tf     # Security groups for ALB, ECS, RDS
+```
+
+## ⚙️ **Configuration**
+
+### 1. **Prerequisites**
+```bash
+# Install Terraform
+brew install terraform  # macOS
+# or
+sudo apt-get install terraform  # Ubuntu
+
+# Configure AWS credentials
+aws configure
+# or export environment variables:
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+```
+
+### 2. **Configure Variables**
+Update `terraform.tfvars` with your specific values:
 
 ```hcl
 # Basic Configuration
 aws_region   = "us-east-1"
-project_name = "your-project-name"
-domain_name  = "api.yourdomain.com"
-image_url    = "your-account.dkr.ecr.us-east-1.amazonaws.com/your-app:latest"
+project_name = "my-nestjs-app"
+domain_name  = "api.mycompany.com"
 
-# VPC and Subnet Configuration
-vpc_id             = "vpc-xxxxxxxxx"
-public_subnet_ids  = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]
-private_subnet_ids = ["subnet-zzzzzzzzz", "subnet-aaaaaaaaa"]
+# Network Configuration
+vpc_cidr = "10.0.0.0/16"
+azs      = ["us-east-1a", "us-east-1b"]
+
+# Application Configuration
+image_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:latest"
 
 # Database Configuration
 db_username = "postgres"
-db_password = "your-secure-password"
+db_password = "super-secure-password-123!"
 
-# GitHub Configuration
-github_repo_url    = "https://github.com/your-username/your-repo.git"
-artifact_bucket    = "your-artifact-bucket-name"
-github_owner       = "your-username"
-github_repo        = "your-repo"
-github_branch      = "main"
+# CI/CD Configuration
+github_repo_url = "https://github.com/myusername/my-nestjs-app.git"
+artifact_bucket = "my-company-artifacts-bucket"
+github_owner    = "myusername"
+github_repo     = "my-nestjs-app"
+github_branch   = "main"
 ```
 
-2. **Initialize Terraform**:
-
+### 3. **Deploy Infrastructure**
 ```bash
+# Initialize Terraform and download providers/modules
 terraform init
-```
 
-3. **Validate Configuration**:
-
-```bash
-terraform validate
-```
-
-4. **Plan Deployment**:
-
-```bash
+# Review the deployment plan
 terraform plan
-```
 
-5. **Deploy Infrastructure**:
-
-```bash
+# Deploy the infrastructure
 terraform apply
 ```
 
-6. **Configure GitHub Connection**: After deployment, you'll need to complete
-   the GitHub connection:
-   - Go to the AWS Console → Developer Tools → CodePipeline → Settings →
-     Connections
-   - Find the connection created by Terraform (named
-     `{project_name}-github-connection`)
-   - Click "Update pending connection" and authorize access to your GitHub
-     repository
+## 🔗 **CodeStar Connections Setup**
 
-## What This Creates
+This configuration uses **AWS CodeStar Connections** (GitHub v2) for secure repository access:
 
-- **ECS Cluster**: Fargate-based cluster for running containerized applications
-- **Application Load Balancer**: For distributing traffic to ECS tasks
-- **RDS PostgreSQL**: Database instance with automatic backups
-- **ECR Repository**: For storing Docker images
-- **CodePipeline & CodeBuild**: CI/CD pipeline connected to GitHub via CodeStar
-  Connection
-- **CodeStar Connection**: Secure connection to GitHub (requires manual
-  authorization)
-- **IAM Roles & Policies**: Proper permissions for all services
-- **Security Groups**: Network security rules
-- **Secrets Manager**: Secure storage for database credentials
-- **CloudWatch**: Logging and monitoring
+### **1. Create GitHub Connection**
+After `terraform apply`, complete the GitHub connection:
+```bash
+# Get the connection ARN from outputs
+terraform output
 
-## Outputs
+# Go to AWS Console > CodePipeline > Settings > Connections
+# Find your connection and click "Update pending connection"
+# Authorize with GitHub and select repositories
+```
 
-After deployment, you'll get:
+### **2. Connection Features**
+- ✅ **Secure OAuth-based authentication** (no personal access tokens)
+- ✅ **Fine-grained repository permissions**
+- ✅ **Webhook-based triggers** for automatic deployments
+- ✅ **Support for GitHub organizations and private repositories**
 
-- `alb_dns_name`: The DNS name of your load balancer
-- `ecs_service_name`: Name of the ECS service
-- `cluster_name`: Name of the ECS cluster
-- `rds_endpoint`: Database endpoint
-- `rds_port`: Database port
+## 🚀 **Application Requirements**
 
-## Security Notes
+Your application repository should include:
 
-- Database is deployed in private subnets
-- RDS instance is not publicly accessible
-- Secrets are stored in AWS Secrets Manager
-- Security groups follow least privilege principles
+### **Dockerfile**
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
 
-## Clean Up
+### **buildspec.yml** (for CodeBuild)
+```yaml
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $IMAGE_TAG .
+      - docker tag $IMAGE_TAG:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+```
 
-To destroy all resources:
+## 📊 **Outputs**
 
+After deployment, you'll receive:
+
+```bash
+# Network Information
+vpc_id              = "vpc-0123456789abcdef0"
+public_subnet_ids   = ["subnet-12345", "subnet-67890"]
+private_subnet_ids  = ["subnet-abc123", "subnet-def456"]
+
+# Application Access
+alb_dns_name = "my-app-alb-1234567890.us-east-1.elb.amazonaws.com"
+
+# ECS Information
+cluster_name        = "my-nestjs-app-cluster"
+ecs_service_name    = "my-nestjs-app-service"
+task_definition_arn = "arn:aws:ecs:us-east-1:123456789012:task-definition/my-app:1"
+
+# Database Connection
+rds_endpoint = "my-app-db.xyz123.us-east-1.rds.amazonaws.com"
+rds_port     = 5432
+```
+
+## 🔒 **Security Features**
+
+- **Private Subnets**: ECS tasks and RDS run in isolated private subnets
+- **Security Groups**: Restrictive ingress/egress rules with least privilege
+- **NAT Gateways**: Secure outbound internet access for private resources
+- **Secrets Manager**: Database credentials stored securely
+- **IAM Roles**: Service-specific roles with minimal required permissions
+- **VPC Flow Logs**: Optional network traffic monitoring
+
+## 🧹 **Cleanup**
+
+To destroy the infrastructure:
 ```bash
 terraform destroy
 ```
 
-**Warning**: This will delete all resources including the database. Make sure to
-backup any important data first.
+⚠️ **Warning**: This will permanently delete all resources including databases and stored data.
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes following the established patterns
+4. Test with `terraform plan`
+5. Submit a pull request
+
+## 📝 **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-## 🌟 Inspiration
-
-This project was built to demonstrate a production-ready containerized
-application architecture on AWS using Terraform. It reflects real-world
-deployment pipelines used by DevOps teams to manage scalable backend services
-with secure database and CI/CD automation. Inspired by best practices from:
-
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
-- [Terraform Module Standards](https://developer.hashicorp.com/terraform/language/modules/develop/structure)
-- Enterprise-grade deployment patterns observed in leading tech companies
+*Built with ❤️ using Terraform, AWS ECS Fargate, and modern DevOps practices.*

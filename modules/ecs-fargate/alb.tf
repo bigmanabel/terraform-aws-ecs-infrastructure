@@ -8,10 +8,11 @@ resource "aws_lb" "this" {
 
 # ALB Target Group
 resource "aws_lb_target_group" "this" {
-  name     = "${var.project_name}-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
+  name        = "${var.project_name}-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
 
   health_check {
     path                = "/"

@@ -21,21 +21,6 @@ variable "image_url" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "VPC ID to deploy resources into"
-  type        = string
-}
-
-variable "public_subnet_ids" {
-  description = "List of public subnet IDs for ALB"
-  type        = list(string)
-}
-
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs for ECS & RDS"
-  type        = list(string)
-}
-
 variable "db_username" {
   description = "Master username for the RDS instance"
   type        = string
@@ -72,4 +57,16 @@ variable "github_branch" {
   description = "GitHub branch to use for the CodePipeline"
   type        = string
   default     = "main"
+}
+
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "azs" {
+  description = "List of availability zones"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
 }
