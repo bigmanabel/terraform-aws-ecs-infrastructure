@@ -10,12 +10,6 @@ variable "project_name" {
   default     = "tf-aws-ecs-fargate"
 }
 
-variable "domain_name" {
-  description = "The domain name for the application"
-  type        = string
-  default     = "example.com"
-}
-
 variable "image_url" {
   description = "The URL of the Docker image to deploy"
   type        = string

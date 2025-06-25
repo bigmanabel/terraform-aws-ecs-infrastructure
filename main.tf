@@ -10,7 +10,6 @@ module "ecs_fargate" {
   source             = "./modules/ecs-fargate"
   aws_region         = var.aws_region
   project_name       = var.project_name
-  domain_name        = var.domain_name
   image_url          = var.image_url
   vpc_id             = module.vpc.vpc_id
   public_subnet_ids  = module.vpc.public_subnet_ids

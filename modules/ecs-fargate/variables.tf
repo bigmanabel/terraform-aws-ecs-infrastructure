@@ -11,11 +11,6 @@ variable "image_url" {
   description = "ECR image URI for the app container"
 }
 
-variable "domain_name" {
-  type        = string
-  description = "Optional custom domain for the ALB"
-}
-
 variable "vpc_id" {
   type        = string
   description = "VPC ID to deploy resources into"

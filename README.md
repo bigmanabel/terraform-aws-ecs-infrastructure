@@ -36,16 +36,19 @@ includes:
 
 ### 🔄 **CI/CD Pipeline**
 
-- **CodePipeline** with CodeStar Connections (GitHub v2 integration)
-- **CodeBuild** for containerizing applications
-- **ECR Repository** for storing Docker images
+- **CodePipeline** with 3 stages: Source → Build → Deploy
+- **CodeStar Connections** (GitHub v2 integration) for secure repository access
+- **CodeBuild** for containerizing applications and pushing to ECR
+- **ECR Repository** for storing Docker images with automatic cleanup
+- **S3 Artifacts Bucket** with lifecycle policies for build artifacts
+- **ECS Deploy Action** for zero-downtime rolling deployments
 - **IAM Roles and Policies** with least-privilege access
 
 ## 📁 **Project Structure**
 
 ### Main Configuration
 
-```
+```text
 ├── main.tf                 # Module orchestration and resource calls
 ├── variables.tf            # Input variables for the entire configuration
 ├── outputs.tf             # Output values from both modules
@@ -56,7 +59,7 @@ includes:
 
 ### VPC Module (`modules/vpc/`)
 
-```
+```text
 ├── main.tf                # VPC, subnets, gateways, routing, security groups
 ├── variables.tf           # VPC-specific input variables
 └── outputs.tf             # VPC resource outputs (IDs, CIDR blocks)
@@ -64,7 +67,7 @@ includes:
 
 ### ECS Fargate Module (`modules/ecs-fargate/`)
 
-```
+```text
 ├── main.tf                # Empty - resources split into dedicated files
 ├── variables.tf           # ECS module input variables
 ├── outputs.tf             # ECS module outputs
@@ -76,6 +79,7 @@ includes:
 ├── ecs.tf                 # ECS cluster, task definition, service
 ├── iam.tf                 # IAM roles, policies, attachments
 ├── rds.tf                 # RDS instance and subnet groups
+├── s3.tf                  # S3 bucket for CodePipeline artifacts
 ├── secrets.tf             # AWS Secrets Manager resources
 └── security-groups.tf     # Security groups for ALB, ECS, RDS
 ```
@@ -105,26 +109,31 @@ Update `terraform.tfvars` with your specific values:
 # Basic Configuration
 aws_region   = "us-east-1"
 project_name = "my-nestjs-app"
-domain_name  = "api.mycompany.com"
 
 # Network Configuration
 vpc_cidr = "10.0.0.0/16"
 azs      = ["us-east-1a", "us-east-1b"]
 
 # Application Configuration
-image_url = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:latest"
+image_url = "alpine:latest"  # Placeholder - will be replaced by CodePipeline
 
 # Database Configuration
 db_username = "postgres"
 db_password = "super-secure-password-123!"
 
 # CI/CD Configuration
-github_repo_url = "https://github.com/myusername/my-nestjs-app.git"
-artifact_bucket = "my-company-artifacts-bucket"
 github_owner    = "myusername"
 github_repo     = "my-nestjs-app"
 github_branch   = "main"
 ```
+
+**Key Changes Made:**
+
+- ✅ **Removed `domain_name`** - No longer needed (was unused)
+- ✅ **Removed `artifact_bucket`** - Now automatically generated
+- ✅ **Removed `github_repo_url`** - CodePipeline uses owner/repo instead
+- ✅ **Simplified `image_url`** - Just a placeholder since CodePipeline builds
+  images
 
 ### 3. **Deploy Infrastructure**
 
@@ -271,6 +280,10 @@ alb_dns_name = "my-app-alb-1234567890.us-east-1.elb.amazonaws.com"
 cluster_name        = "my-nestjs-app-cluster"
 ecs_service_name    = "my-nestjs-app-service"
 task_definition_arn = "arn:aws:ecs:us-east-1:123456789012:task-definition/my-app:1"
+
+# CI/CD Resources
+artifacts_bucket_name = "nestjs-app-artifacts-a1b2c3d4"
+ecr_repository_url    = "123456789012.dkr.ecr.us-east-1.amazonaws.com/nestjs-app-repo"
 
 # Database Connection
 rds_endpoint = "my-app-db.xyz123.us-east-1.rds.amazonaws.com"
