@@ -106,3 +106,13 @@ terraform destroy
 
 **Warning**: This will delete all resources including the database. Make sure to
 backup any important data first.
+
+---
+
+## 🌟 Inspiration
+
+This project was built to demonstrate a production-ready containerized application architecture on AWS using Terraform. It reflects real-world deployment pipelines used by DevOps teams to manage scalable backend services with secure database and CI/CD automation. Inspired by best practices from:
+
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
+- [Terraform Module Standards](https://developer.hashicorp.com/terraform/language/modules/develop/structure)
+- Enterprise-grade deployment patterns observed in leading tech companies
