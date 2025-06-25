@@ -288,11 +288,29 @@ rds_port     = 5432
 
 ## 🧹 **Cleanup**
 
+The infrastructure is now configured with automatic cleanup features:
+
+### **Automatic Cleanup Features**
+
+- ✅ **ECR Repository**: `force_delete = true` - Automatically deletes images
+  when destroying
+- ✅ **S3 Bucket**: `force_destroy = true` - Automatically empties bucket when
+  destroying
+- ✅ **Lifecycle Policies**: Automatically cleans up old artifacts after 30 days
+
+### **Manual Destroy**
+
 To destroy the infrastructure:
 
 ```bash
 terraform destroy
 ```
+
+The destroy process will now handle:
+
+- Deleting Docker images from ECR
+- Emptying and deleting the S3 artifacts bucket
+- Removing all other AWS resources
 
 ⚠️ **Warning**: This will permanently delete all resources including databases
 and stored data.
