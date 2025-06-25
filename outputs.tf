@@ -37,3 +37,13 @@ output "private_subnet_ids" {
   description = "List of private subnet IDs"
   value       = module.vpc.private_subnet_ids
 }
+
+output "artifacts_bucket_name" {
+  description = "Name of the automatically generated S3 bucket for CodePipeline artifacts"
+  value       = module.ecs_fargate.artifacts_bucket_name
+}
+
+output "ecr_repository_url" {
+  description = "URL of the ECR repository for Docker images"
+  value       = module.ecs_fargate.ecr_repository_url
+}

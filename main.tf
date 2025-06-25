@@ -17,7 +17,6 @@ module "ecs_fargate" {
   private_subnet_ids = module.vpc.private_subnet_ids
   db_username        = var.db_username
   db_password        = var.db_password
-  artifact_bucket    = var.artifact_bucket
   github_owner       = var.github_owner
   github_repo        = var.github_repo
   github_branch      = var.github_branch

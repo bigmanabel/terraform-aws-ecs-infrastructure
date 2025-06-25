@@ -86,6 +86,22 @@ resource "aws_iam_policy" "codebuild_ecr_policy" {
           "logs:PutLogEvents"
         ],
         Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion",
+          "s3:PutObject"
+        ],
+        Resource = "arn:aws:s3:::${aws_s3_bucket.artifacts.bucket}/*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:ListBucket"
+        ],
+        Resource = "arn:aws:s3:::${aws_s3_bucket.artifacts.bucket}"
       }
     ]
   })
@@ -130,14 +146,14 @@ resource "aws_iam_policy" "codepipeline_s3_policy" {
           "s3:GetObjectVersion",
           "s3:PutObject"
         ],
-        Resource = "arn:aws:s3:::${var.artifact_bucket}/*"
+        Resource = "arn:aws:s3:::${aws_s3_bucket.artifacts.bucket}/*"
       },
       {
         Effect = "Allow",
         Action = [
           "s3:ListBucket"
         ],
-        Resource = "arn:aws:s3:::${var.artifact_bucket}"
+        Resource = "arn:aws:s3:::${aws_s3_bucket.artifacts.bucket}"
       },
       {
         Effect = "Allow",

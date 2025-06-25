@@ -1,6 +1,3 @@
-
-
-
 output "alb_dns_name" {
   value = aws_lb.this.dns_name
 }
@@ -27,4 +24,14 @@ output "rds_port" {
 
 output "rds_secret_arn" {
   value = aws_secretsmanager_secret.db_credentials.arn
+}
+
+output "artifacts_bucket_name" {
+  description = "Name of the S3 bucket for CodePipeline artifacts"
+  value       = aws_s3_bucket.artifacts.bucket
+}
+
+output "ecr_repository_url" {
+  description = "URL of the ECR repository"
+  value       = aws_ecr_repository.nestjs.repository_url
 }

@@ -43,12 +43,6 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "artifact_bucket" {
-  type        = string
-  description = "S3 bucket name for storing build artifacts"
-
-}
-
 variable "github_owner" {
   type        = string
   description = "GitHub owner (username or organization)"
