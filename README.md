@@ -44,6 +44,14 @@ includes:
 - **ECS Deploy Action** for zero-downtime rolling deployments
 - **IAM Roles and Policies** with least-privilege access
 
+### 🧠 **Smart Defaults & Data Sources**
+
+- **Auto-detected Availability Zones** - Uses first 2 AZs in current region
+- **Dynamic AWS Account/Region** - Automatically detects from provider config
+- **Latest PostgreSQL Patches** - Uses latest patch version of PostgreSQL 15.x
+- **Unique Resource Naming** - Random suffixes prevent naming conflicts
+- **Multi-region Compatible** - Works in any AWS region without code changes
+
 ## 📁 **Project Structure**
 
 ### Main Configuration
@@ -52,6 +60,7 @@ includes:
 ├── main.tf                 # Module orchestration and resource calls
 ├── variables.tf            # Input variables for the entire configuration
 ├── outputs.tf             # Output values from both modules
+├── data.tf                # Data sources for dynamic values (AZs, region, etc.)
 ├── terraform.tfvars       # Variable values and configuration
 ├── provider.tf            # AWS provider configuration
 └── README.md              # This documentation
@@ -71,6 +80,7 @@ includes:
 ├── main.tf                # Empty - resources split into dedicated files
 ├── variables.tf           # ECS module input variables
 ├── outputs.tf             # ECS module outputs
+├── data.tf                # Data sources for region, account ID, RDS versions
 ├── alb.tf                 # Application Load Balancer resources
 ├── cloudwatch.tf          # CloudWatch log groups
 ├── codebuild.tf           # CodeBuild project configuration
@@ -112,7 +122,7 @@ project_name = "my-nestjs-app"
 
 # Network Configuration
 vpc_cidr = "10.0.0.0/16"
-azs      = ["us-east-1a", "us-east-1b"]
+# azs = []  # Optional - auto-detects first 2 AZs in current region
 
 # Application Configuration
 image_url = "alpine:latest"  # Placeholder - will be replaced by CodePipeline
@@ -127,11 +137,16 @@ github_repo     = "my-nestjs-app"
 github_branch   = "main"
 ```
 
-**Key Changes Made:**
+**Key Improvements Made:**
 
 - ✅ **Removed `domain_name`** - No longer needed (was unused)
-- ✅ **Removed `artifact_bucket`** - Now automatically generated
+- ✅ **Removed `artifact_bucket`** - Now automatically generated with unique
+  names
 - ✅ **Removed `github_repo_url`** - CodePipeline uses owner/repo instead
+- ✅ **Auto-detect AZs** - Uses data sources to find available zones
+  automatically
+- ✅ **Dynamic AWS region/account** - Uses data sources instead of variables
+- ✅ **Latest PostgreSQL versions** - Automatically uses latest patch versions
 - ✅ **Simplified `image_url`** - Just a placeholder since CodePipeline builds
   images
 
@@ -298,6 +313,14 @@ rds_port     = 5432
 - **Secrets Manager**: Database credentials stored securely
 - **IAM Roles**: Service-specific roles with minimal required permissions
 - **VPC Flow Logs**: Optional network traffic monitoring
+
+## 🌍 **Multi-Region & Portability Features**
+
+- **Dynamic AZ Detection**: Automatically finds available zones in any region
+- **Data-driven Configuration**: Uses AWS APIs instead of hard-coded values
+- **Latest Software Versions**: Automatically uses current PostgreSQL patches
+- **Account-agnostic**: Works across different AWS accounts seamlessly
+- **Region-portable**: Deploy in any AWS region without code changes
 
 ## 🧹 **Cleanup**
 

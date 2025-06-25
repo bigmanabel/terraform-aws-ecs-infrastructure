@@ -60,7 +60,7 @@ resource "aws_codepipeline" "app" {
       provider        = "ECS"
       input_artifacts = ["build_output"]
       version         = "1"
-      region          = var.aws_region
+      region          = data.aws_region.current.name
       configuration = {
         ClusterName = aws_ecs_cluster.this.name
         ServiceName = aws_ecs_service.app.name

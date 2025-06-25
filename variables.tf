@@ -50,7 +50,7 @@ variable "vpc_cidr" {
 }
 
 variable "azs" {
-  description = "List of availability zones"
+  description = "List of availability zones (if not provided, will use first 2 AZs in current region)"
   type        = list(string)
-  default     = ["us-east-1a", "us-east-1b"]
+  default     = []
 }

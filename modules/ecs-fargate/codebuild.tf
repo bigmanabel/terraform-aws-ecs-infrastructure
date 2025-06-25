@@ -9,7 +9,7 @@ resource "aws_codebuild_project" "app" {
 
   environment {
     compute_type    = "BUILD_GENERAL1_SMALL"
-    image           = "aws/codebuild/standard:6.0"
+    image           = "aws/codebuild/standard:7.0" # Updated to newer version
     type            = "LINUX_CONTAINER"
     privileged_mode = true
 
@@ -25,7 +25,12 @@ resource "aws_codebuild_project" "app" {
 
     environment_variable {
       name  = "AWS_DEFAULT_REGION"
-      value = var.aws_region
+      value = data.aws_region.current.name
+    }
+
+    environment_variable {
+      name  = "AWS_ACCOUNT_ID"
+      value = data.aws_caller_identity.current.account_id
     }
   }
 

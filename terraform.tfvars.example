@@ -4,7 +4,7 @@ image_url    = ""
 
 # VPC Configuration
 vpc_cidr = ""
-azs      = []
+# azs = []  # Optional - leave empty to auto-detect AZs
 
 # Database Configuration
 db_username = ""
