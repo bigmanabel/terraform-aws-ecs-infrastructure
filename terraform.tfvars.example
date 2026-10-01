@@ -1,16 +1,16 @@
-aws_region   = ""
-project_name = ""
-image_url    = ""
+aws_region   = "us-east-1"
+project_name = "example-ecs-platform"
+image_url    = "public.ecr.aws/docker/library/nginx:stable"
 
-# VPC Configuration
-vpc_cidr = ""
-# azs = []  # Optional - leave empty to auto-detect AZs
+# VPC configuration. Leave azs empty to use the first two available zones.
+vpc_cidr = "10.0.0.0/16"
+azs      = []
 
-# Database Configuration
-db_username = ""
-db_password = ""
+# Database configuration. Supply the password with TF_VAR_db_password rather
+# than committing it to a .tfvars file.
+db_username = "app_admin"
 
-# GitHub Configuration
-github_owner  = ""
-github_repo   = ""
-github_branch = ""
+# GitHub source repository for CodePipeline.
+github_owner  = "your-github-user-or-org"
+github_repo   = "your-application-repository"
+github_branch = "main"
