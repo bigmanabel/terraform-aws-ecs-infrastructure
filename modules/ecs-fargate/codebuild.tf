@@ -19,13 +19,8 @@ resource "aws_codebuild_project" "app" {
     }
 
     environment_variable {
-      name  = "IMAGE_TAG"
-      value = "latest"
-    }
-
-    environment_variable {
       name  = "AWS_DEFAULT_REGION"
-      value = data.aws_region.current.name
+      value = data.aws_region.current.region
     }
 
     environment_variable {

@@ -93,7 +93,8 @@ GitHub source → CodePipeline → CodeBuild → ECR → ECS service deployment
 
 The application repository must publish an `imagedefinitions.json` artifact.
 The included CodeBuild configuration passes `REPOSITORY_URI`, `IMAGE_TAG`, and
-`AWS_DEFAULT_REGION` to the build process.
+`AWS_DEFAULT_REGION` to the build process. `IMAGE_TAG` is the source commit ID,
+so every pipeline build creates an immutable, traceable ECR image tag.
 
 ## Operational and security notes
 
@@ -101,9 +102,6 @@ The included CodeBuild configuration passes `REPOSITORY_URI`, `IMAGE_TAG`, and
   point. Security groups limit traffic by role.
 - RDS generates the database password and stores it in Secrets Manager. Use a
   protected remote state backend and restrict access to the RDS-managed secret.
-- Existing local `terraform.tfvars` files may still contain `db_password` from
-  earlier revisions. The input is ignored for compatibility; remove it when
-  updating those local files.
 - AWS resources created here—including NAT gateways, RDS, ALB, CodeBuild, and
   CodePipeline—incur charges. Review your plan and AWS pricing before apply.
 - Logs use a seven-day retention period. Tune retention and alarms to match the

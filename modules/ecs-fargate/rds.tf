@@ -12,7 +12,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 resource "aws_db_instance" "postgres" {
   identifier                  = "${var.project_name}-db"
   engine                      = "postgres"
-  engine_version              = data.aws_rds_engine_version.postgresql.version
+  engine_version              = "16"
   instance_class              = "db.t3.micro"
   allocated_storage           = 20
   storage_type                = "gp2"
@@ -24,6 +24,7 @@ resource "aws_db_instance" "postgres" {
   publicly_accessible         = false
   storage_encrypted           = true
   backup_retention_period     = 7
+  auto_minor_version_upgrade  = true
   copy_tags_to_snapshot       = true
   deletion_protection         = var.deletion_protection
   skip_final_snapshot         = var.skip_final_snapshot

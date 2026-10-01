@@ -23,6 +23,7 @@ resource "aws_codepipeline" "app" {
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"
       version          = "1"
+      namespace        = "SourceVariables"
       output_artifacts = ["source_output"]
 
       configuration = {
@@ -46,6 +47,13 @@ resource "aws_codepipeline" "app" {
       version          = "1"
       configuration = {
         ProjectName = aws_codebuild_project.app.name
+        EnvironmentVariables = jsonencode([
+          {
+            name  = "IMAGE_TAG"
+            value = "#{SourceVariables.CommitId}"
+            type  = "PLAINTEXT"
+          }
+        ])
       }
     }
   }
@@ -60,7 +68,7 @@ resource "aws_codepipeline" "app" {
       provider        = "ECS"
       input_artifacts = ["build_output"]
       version         = "1"
-      region          = data.aws_region.current.name
+      region          = data.aws_region.current.region
       configuration = {
         ClusterName = aws_ecs_cluster.this.name
         ServiceName = aws_ecs_service.app.name
