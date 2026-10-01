@@ -28,10 +28,20 @@ variable "db_username" {
   default     = "postgres"
 }
 
-variable "db_password" {
+variable "deletion_protection" {
+  type        = bool
+  description = "Prevent accidental deletion of the RDS instance."
+}
+
+variable "skip_final_snapshot" {
+  type        = bool
+  description = "Skip the final RDS snapshot during destroy."
+}
+
+variable "final_snapshot_identifier" {
   type        = string
-  description = "Master password for the RDS instance"
-  sensitive   = true
+  description = "Optional final snapshot name used when skip_final_snapshot is false."
+  default     = null
 }
 
 variable "github_owner" {

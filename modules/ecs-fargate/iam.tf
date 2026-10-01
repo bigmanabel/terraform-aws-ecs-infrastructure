@@ -17,7 +17,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Secrets Manager Access Policy
+# Permit the ECS execution role to inject the RDS-managed credentials.
 resource "aws_iam_policy" "secrets_manager_access" {
   name = "${var.project_name}-secrets-manager-access"
   policy = jsonencode({
@@ -27,7 +27,7 @@ resource "aws_iam_policy" "secrets_manager_access" {
       Action = [
         "secretsmanager:GetSecretValue"
       ],
-      Resource = aws_secretsmanager_secret.db_credentials.arn
+      Resource = aws_db_instance.postgres.master_user_secret[0].secret_arn
     }]
   })
 }

@@ -57,7 +57,6 @@ Copy the example file and keep secrets out of version control:
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
-export TF_VAR_db_password='replace-with-a-strong-password'
 terraform fmt -check -recursive
 terraform init
 terraform validate
@@ -100,9 +99,11 @@ The included CodeBuild configuration passes `REPOSITORY_URI`, `IMAGE_TAG`, and
 
 - ECS tasks and RDS are placed in private subnets; the ALB is the public entry
   point. Security groups limit traffic by role.
-- Database credentials are written to Secrets Manager, but Terraform variables
-  and state can still contain sensitive data. Use a protected remote state
-  backend and restrict access to state files.
+- RDS generates the database password and stores it in Secrets Manager. Use a
+  protected remote state backend and restrict access to the RDS-managed secret.
+- Existing local `terraform.tfvars` files may still contain `db_password` from
+  earlier revisions. The input is ignored for compatibility; remove it when
+  updating those local files.
 - AWS resources created here—including NAT gateways, RDS, ALB, CodeBuild, and
   CodePipeline—incur charges. Review your plan and AWS pricing before apply.
 - Logs use a seven-day retention period. Tune retention and alarms to match the
@@ -118,7 +119,7 @@ before a client deployment:
 | --- | --- |
 | Single-AZ RDS with `skip_final_snapshot = true` | Multi-AZ availability, backup retention, deletion protection, and a final-snapshot policy |
 | Mutable ECR tags with `force_delete = true` | Immutable release tags, lifecycle controls, and retention requirements |
-| Password supplied to Terraform | A managed secret-generation and rotation design that minimizes state exposure |
+| RDS-managed master credentials | A rotation schedule and access review for the generated secret |
 | Baseline CloudWatch logging | Alarms, dashboards, tracing, and incident ownership |
 
 ## Project layout

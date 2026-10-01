@@ -6,7 +6,7 @@ resource "random_id" "bucket_suffix" {
 # S3 Bucket for CodePipeline Artifacts
 resource "aws_s3_bucket" "artifacts" {
   bucket        = "${var.project_name}-artifacts-${random_id.bucket_suffix.hex}"
-  force_destroy = true
+  force_destroy = false
 
   tags = {
     Name    = "${var.project_name}-artifacts"

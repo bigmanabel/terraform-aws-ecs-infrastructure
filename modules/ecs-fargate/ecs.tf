@@ -23,11 +23,11 @@ resource "aws_ecs_task_definition" "app" {
       secrets = [
         {
           name      = "DB_USERNAME",
-          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:username::"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:username::"
         },
         {
           name      = "DB_PASSWORD",
-          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:password::"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:password::"
         }
       ],
       logConfiguration = {

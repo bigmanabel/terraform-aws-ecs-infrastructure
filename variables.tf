@@ -22,9 +22,28 @@ variable "db_username" {
 }
 
 variable "db_password" {
-  description = "Master password for the RDS instance"
+  description = "Deprecated compatibility input. It is ignored because RDS now manages the master password in Secrets Manager; remove it from local tfvars files."
   type        = string
   sensitive   = true
+  default     = null
+}
+
+variable "deletion_protection" {
+  description = "Prevent accidental deletion of the RDS instance. Disable explicitly before an intentional destroy."
+  type        = bool
+  default     = true
+}
+
+variable "skip_final_snapshot" {
+  description = "Skip the final RDS snapshot during destroy. Keep false for protected environments."
+  type        = bool
+  default     = false
+}
+
+variable "final_snapshot_identifier" {
+  description = "Optional final snapshot name used when skip_final_snapshot is false."
+  type        = string
+  default     = null
 }
 
 variable "github_owner" {

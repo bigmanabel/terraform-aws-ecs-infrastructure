@@ -6,9 +6,14 @@ image_url    = "public.ecr.aws/docker/library/nginx:stable"
 vpc_cidr = "10.0.0.0/16"
 azs      = []
 
-# Database configuration. Supply the password with TF_VAR_db_password rather
-# than committing it to a .tfvars file.
+# Database configuration. RDS generates and stores the master password in
+# Secrets Manager; do not add a password to this file.
 db_username = "app_admin"
+
+# Recovery and deletion safeguards.
+deletion_protection       = true
+skip_final_snapshot       = false
+final_snapshot_identifier = "example-ecs-platform-final-snapshot"
 
 # GitHub source repository for CodePipeline.
 github_owner  = "your-github-user-or-org"
